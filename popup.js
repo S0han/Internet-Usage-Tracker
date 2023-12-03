@@ -8,12 +8,16 @@ let elapsedPausedTime = 0;          //keep track of time while stopped
 chrome.webNavigation.onDOMContentLoaded.addListener(function(tab) {
     if(tab.frameId === 0 && tab.url.includes("###############")) {
         console.log("Youtube has been loaded...starting timer");                    //upload notification to console ---> can be deleted after testing
-        if (!stopwatchInterval) {
-            startTime = new Date().getTime() - elapsedPausedTime;                   //get the start time
-            stopwatchInterval = setInterval(udpateStopwatch, 1000);                 //get the updated time interval in seconds
-        }
+        startStopwatch()                                                            //start timing usage
     }
 });
+
+function startStopwatch() {
+    if (!stopwatchInterval) {
+        startTime = new Date().getTime() - elapsedPausedTime;                       //get the start time
+        stopwatchInterval = setInterval(udpateStopwatch, 1000);                     //get the updated time interval in seconds
+    }
+}
 
 function stopStopwatch() {
     clearInterval(stopwatchInterval);                                               //stop the updates to the HTML timer display
@@ -30,19 +34,30 @@ function resetStopwatch() {
 
 //take the current global time in milliseconds and translate it into updating HTML stopwatch
 function udpateStopwatch() {
-    let currentTime = new Date().getTime();                                         //get current time
+    let currentTime = new Date().getTime();                                         //get current time in milliseconds
     let elapsedTime = currentTime - startTime;                                      //calculate time elapsed since the start
     let seconds = Math.floor(elapsedTime / 1000) % 60;                              //get the seconds
     let minutes = Math.floor(elapsedTime / 1000 / 60) % 60;                         //get the minutes
     let hours = Math.floor(elapsedTime / 1000 / 60/ 60);                            //get the hours
     let displayTime = pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);         //format the display time
+    
+    if (isSameDay(currentTime, currentTime+1000)) {                                 //reset stopwatch if new day
+        resetStopwatch()
+        startStopwatch()
+    }
+    
     document.getElementById("stopwatch").innerHTML = displayTime;                   //update the HTML to show new display time
 }
 
+//check if the section of the timmer hh/mm/ss are abover or below 10 to see whether or not to add a leading 0 to keep format
 function pad(number) {
     return (number < 10 ? "0" : "") + number
 }
 
+//check if days are the same using string comparison
+function isSameDay(a, b) {
+    return a.toDateString() == b.toDateString();
+}
 
 
 
