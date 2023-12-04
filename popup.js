@@ -1,14 +1,17 @@
 //Apply stopwatch principles to code
-let startTime = parseInt(localStorage.getItem('startTime'))|| new Date().getTime();             //get or set the start time
+let startTime;                                                                                  //start
 let stopwatchInterval;                                                                          //interval     
 let elapsedPausedTime = 0;                                                                      //keep track of time while stopped
 
 function initAndStartStopwatch() {
-    if (!startTime) {                                                                           // If start time is not retrieved properly, set a default value
+    if (!localStorage.getItem('startTime')) {                                                   // Check if 'startTime' is present in localStorage
         startTime = new Date().getTime();
         localStorage.setItem('startTime', startTime);
+    } else {
+        startTime = parseInt(localStorage.getItem('startTime'));
+        elapsedPausedTime = parseInt(localStorage.getItem('elapsedPausedTime')) || 0;           // Retrieve elapsed paused time
+        startStopwatch();
     }
-    startStopwatch();
 }
 
 function startStopwatch() {
@@ -22,22 +25,25 @@ function stopStopwatch() {
     clearInterval(stopwatchInterval);                                                           //stop the updates to the HTML timer display
     elapsedPausedTime = new Date().getTime() - startTime;                                       //calculate time elapsed since paused
     stopwatchInterval = null;                                                                   //reset the interval variable
+    localStorage.setItem('elapsedPausedTime', elapsedPausedTime);                               // Store the elapsed paused time
 }
 
 //reset the timer function ----> event listener to check if new day occurs which triggers the reset
 function resetStopwatch() {
     stopStopwatch();                                                                            //stop the interval
     elapsedPausedTime = 0;                                                                      //reset variable
+    startTime = new Date().getTime();                                                           // Reset start time on reset
+    localStorage.setItem('startTime', startTime);
     document.getElementById("stopwatch").innerHTML = "00:00:00";                                //reset the HTML display timer
 }
 
 //take the current global time in milliseconds and translate it into updating HTML stopwatch
 function udpateStopwatch() {
     let currentTime = new Date().getTime();                                                     //get current time in milliseconds
-    let elapsedTime = currentTime - startTime;                                                  //calculate time elapsed since the start
-    let seconds = Math.floor(elapsedTime / 1000) % 60;                                          //get the seconds
-    let minutes = Math.floor(elapsedTime / 1000 / 60) % 60;                                     //get the minutes
-    let hours = Math.floor(elapsedTime / 1000 / 60/ 60);                                        //get the hours
+    let elapsedTime = (currentTime - startTime) / 1000;                     //calculate time elapsed since the start
+    let seconds = Math.floor(elapsedTime % 60);                                                 //get the seconds
+    let minutes = Math.floor(elapsedTime / 60) % 60;                                            //get the minutes
+    let hours = Math.floor(elapsedTime / 3600);                                                 //get the hours
     let displayTime = pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);                     //format the display time
     
     let currentDayStart = new Date();
@@ -57,17 +63,11 @@ function pad(number) {
     return (number < 10 ? "0" : "") + number;
 }
 
-//check if days are the same using string comparison
-function isSameDay(a, b) {
-    return a.toDateString() == b.toDateString();
-}
-
-
 
 
 //checks to see if a specific URL is opened which will trigger a timer.    **START**
 chrome.webNavigation.onDOMContentLoaded.addListener(function(tab) {
-    if(tab.frameId === 0 && tab.url.includes("instagram.com")) {
+    if(tab.frameId === 0 && tab.url.includes("youtube.com")) {
         console.log("Youtube has been loaded...starting timer");                                //upload notification to console ---> can be deleted after testing
         initAndStartStopwatch();                                                                //start timing usage
     }
@@ -85,10 +85,16 @@ document.addEventListener('DOMContentLoaded', function () {
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
     console.log("Tab with ID " + tabId + " was closed");
     chrome.tabs.get(tabId, function(tab) {
-        if (tab && tab.url.includes("instagram.com")) {                                         //this is where we define the site we want to monitor
+        if (tab && tab.url.includes("youtube.com")) {                                         //this is where we define the site we want to monitor
             console.log("tab with URL " + tab.url + " was closed.")                             //stop timing usage
             stopStopwatch();                                                                    //stop the stop watch      
-            localStorage.setItem('startTime', startTime);                                       //store the current start time to track where it left off
+            
+            //check date and if same day continue from time saved in local storage
+            let currentDate = new Date();                                                       
+            let storedDate = new Date(parseInt(localStorage.getItem('startTime')));             //store the current start time to track where it left off
+            if (currentDate.toDateString() === storedDate.toDateString()) {
+                localStorage.setItem('elapsedPausedTime', elapsedPausedTime);                   // Store the elapsed paused time
+            }   
         }
     });
 });
