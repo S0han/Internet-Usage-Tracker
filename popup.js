@@ -1,7 +1,7 @@
 //Apply stopwatch principles to code
-let startTime;                      //start time
-let stopwatchInterval;              //interval     
-let elapsedPausedTime = 0;          //keep track of time while stopped
+let startTime = localStorage.getItem('startTime') || new Date().getTime();          //get or set the start time
+let stopwatchInterval;                                                              //interval     
+let elapsedPausedTime = 0;                                                          //keep track of time while stopped
 
 function startStopwatch() {
     if (!stopwatchInterval) {
@@ -12,7 +12,7 @@ function startStopwatch() {
 
 function stopStopwatch() {
     clearInterval(stopwatchInterval);                                               //stop the updates to the HTML timer display
-    elapsedPausedTime = new Date().getTime() - startTime                            //calculate time elapsed since paused
+    elapsedPausedTime = new Date().getTime() - startTime;                           //calculate time elapsed since paused
     stopwatchInterval = null;                                                       //reset the interval variable
 }
 
@@ -32,9 +32,13 @@ function udpateStopwatch() {
     let hours = Math.floor(elapsedTime / 1000 / 60/ 60);                            //get the hours
     let displayTime = pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);         //format the display time
     
-    if (isSameDay(currentTime, currentTime+1000)) {                                 //reset stopwatch if new day
-        resetStopwatch()
-        startStopwatch()
+    let currentDayStart = new Date();
+    currentDayStart.setHours(0, 0, 0, 0);                                            //set this time to start of day
+    if (new Date(startTime).getTime() < currentDayStart.getTime()) {
+        resetStopwatch();
+        startTime = new Date().getTime();                                           //update the start time for the new day
+        localStorage.setItem("startTime", startTime);                               //store the new start time
+        startStopwatch();
     }
     
     document.getElementById("stopwatch").innerHTML = displayTime;                   //update the HTML to show new display time **RESET**
@@ -42,7 +46,7 @@ function udpateStopwatch() {
 
 //check if the section of the timmer hh/mm/ss are abover or below 10 to see whether or not to add a leading 0 to keep format
 function pad(number) {
-    return (number < 10 ? "0" : "") + number
+    return (number < 10 ? "0" : "") + number;
 }
 
 //check if days are the same using string comparison
@@ -55,9 +59,9 @@ function isSameDay(a, b) {
 
 //checks to see if a specific URL is opened which will trigger a timer.    **START**
 chrome.webNavigation.onDOMContentLoaded.addListener(function(tab) {
-    if(tab.frameId === 0 && tab.url.includes("###############")) {
+    if(tab.frameId === 0 && tab.url.includes("instagram.com")) {
         console.log("Youtube has been loaded...starting timer");                    //upload notification to console ---> can be deleted after testing
-        startStopwatch()                                                            //start timing usage
+        startStopwatch();                                                           //start timing usage
     }
 });
 
@@ -73,9 +77,9 @@ document.addEventListener('DOMContentLoaded', function () {
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
     console.log("Tab with ID " + tabId + " was closed");
     chrome.tabs.get(tabId, function(tab) {
-        if (tab && tab.url.includes("###############")) {                           //this is where we define the site we want to monitor
+        if (tab && tab.url.includes("instagram.com")) {                             //this is where we define the site we want to monitor
             console.log("tab with URL " + tab.url + " was closed.")                 //stop timing usage
-            stopStopwatch()
+            stopStopwatch();
         }
     });
 });
