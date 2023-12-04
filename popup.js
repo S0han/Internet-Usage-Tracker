@@ -3,15 +3,6 @@ let startTime;                      //start time
 let stopwatchInterval;              //interval     
 let elapsedPausedTime = 0;          //keep track of time while stopped
 
-
-//checks to see if a specific URL is opened which will trigger a timer.
-chrome.webNavigation.onDOMContentLoaded.addListener(function(tab) {
-    if(tab.frameId === 0 && tab.url.includes("###############")) {
-        console.log("Youtube has been loaded...starting timer");                    //upload notification to console ---> can be deleted after testing
-        startStopwatch()                                                            //start timing usage
-    }
-});
-
 function startStopwatch() {
     if (!stopwatchInterval) {
         startTime = new Date().getTime() - elapsedPausedTime;                       //get the start time
@@ -46,7 +37,7 @@ function udpateStopwatch() {
         startStopwatch()
     }
     
-    document.getElementById("stopwatch").innerHTML = displayTime;                   //update the HTML to show new display time
+    document.getElementById("stopwatch").innerHTML = displayTime;                   //update the HTML to show new display time **RESET**
 }
 
 //check if the section of the timmer hh/mm/ss are abover or below 10 to see whether or not to add a leading 0 to keep format
@@ -62,11 +53,29 @@ function isSameDay(a, b) {
 
 
 
+//checks to see if a specific URL is opened which will trigger a timer.    **START**
+chrome.webNavigation.onDOMContentLoaded.addListener(function(tab) {
+    if(tab.frameId === 0 && tab.url.includes("###############")) {
+        console.log("Youtube has been loaded...starting timer");                    //upload notification to console ---> can be deleted after testing
+        startStopwatch()                                                            //start timing usage
+    }
+});
 
 //redirect from the pop-up upon clicking the button in the chrome extension (changes also made to the manifest.json file)
 document.addEventListener('DOMContentLoaded', function () {
     const redirButton = document.getElementById('backPageRedirect');
     redirButton.addEventListener('click', function () {
-        chrome.tabs.create({url: chrome.runtime.getURL('backpage.html')});
+        chrome.tabs.create({url: chrome.runtime.getURL('backpage.html')});          //this is the site where the reports are stored
+    });
+});
+
+//checks to see if a specific URL is closed which will stop the timer
+chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+    console.log("Tab with ID " + tabId + " was closed");
+    chrome.tabs.get(tabId, function(tab) {
+        if (tab && tab.url.includes("###############")) {                           //this is where we define the site we want to monitor
+            console.log("tab with URL " + tab.url + " was closed.")                 //stop timing usage
+            stopStopwatch()
+        }
     });
 });
