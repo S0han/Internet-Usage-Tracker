@@ -6,10 +6,10 @@ let elapsedPausedTime = 0;                                                      
 function initAndStartStopwatch() {
     if (!localStorage.getItem('startTime')) {                                                   // Check if 'startTime' is present in localStorage
         startTime = new Date().getTime();
-        localStorage.setItem('startTime', startTime);
+        localStorage.setItem('startTime', JSON.stringify(startTime));
     } else {
-        startTime = parseInt(localStorage.getItem('startTime'));
-        elapsedPausedTime = parseInt(localStorage.getItem('elapsedPausedTime')) || 0;           // Retrieve elapsed paused time
+        startTime = JSON.parse(localStorage.getItem('startTime'));
+        elapsedPausedTime = JSON.parse(localStorage.getItem('elapsedPausedTime')) || 0;         // Retrieve elapsed paused time
         startStopwatch();
     }
 }
@@ -25,7 +25,7 @@ function stopStopwatch() {
     clearInterval(stopwatchInterval);                                                           //stop the updates to the HTML timer display
     elapsedPausedTime = new Date().getTime() - startTime;                                       //calculate time elapsed since paused
     stopwatchInterval = null;                                                                   //reset the interval variable
-    localStorage.setItem('elapsedPausedTime', elapsedPausedTime);                               // Store the elapsed paused time
+    localStorage.setItem('elapsedPausedTime', JSON.stringify(elapsedPausedTime));               // Store the elapsed paused time
 }
 
 //reset the timer function ----> event listener to check if new day occurs which triggers the reset
@@ -33,14 +33,14 @@ function resetStopwatch() {
     stopStopwatch();                                                                            //stop the interval
     elapsedPausedTime = 0;                                                                      //reset variable
     startTime = new Date().getTime();                                                           // Reset start time on reset
-    localStorage.setItem('startTime', startTime);
+    localStorage.setItem('startTime', JSON.stringify(startTime));
     document.getElementById("stopwatch").innerHTML = "00:00:00";                                //reset the HTML display timer
 }
 
 //take the current global time in milliseconds and translate it into updating HTML stopwatch
 function udpateStopwatch() {
     let currentTime = new Date().getTime();                                                     //get current time in milliseconds
-    let elapsedTime = (currentTime - startTime) / 1000;                     //calculate time elapsed since the start
+    let elapsedTime = (currentTime - startTime) / 1000;                                         //calculate time elapsed since the start
     let seconds = Math.floor(elapsedTime % 60);                                                 //get the seconds
     let minutes = Math.floor(elapsedTime / 60) % 60;                                            //get the minutes
     let hours = Math.floor(elapsedTime / 3600);                                                 //get the hours
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
     console.log("Tab with ID " + tabId + " was closed");
     chrome.tabs.get(tabId, function(tab) {
-        if (tab && tab.url.includes("youtube.com")) {                                         //this is where we define the site we want to monitor
+        if (tab && tab.url.includes("youtube.com")) {                                           //this is where we define the site we want to monitor
             console.log("tab with URL " + tab.url + " was closed.")                             //stop timing usage
             stopStopwatch();                                                                    //stop the stop watch      
             
