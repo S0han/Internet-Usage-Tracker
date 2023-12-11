@@ -11,11 +11,15 @@
         "default_popup": "index.html"
     },
     "background": {
-        "background": "background.js"
+        "service-worker": "service-worker.js"
     },
     "permissions": [
         "activeTab",
         "tabs",
         "webNavigation"
+    ],
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
     ]
 }
