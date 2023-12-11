@@ -35,12 +35,34 @@ function pad(number) {
 chrome.webNavigation.onDOMContentLoaded.addListener(function (details) {
     if (details.frameId === 0 && details.url.includes("youtube.com")) {
         startStopwatch();
+        console.log("Timer started");
     }
 });
 
 // Listen for tab closure or navigation
 chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
-    if (removeInfo.isWindowClosing && removeInfo.url.includes("youtube.com")) {
-        stopStopwatch();
-    }
+    chrome.tabs.query({ url: "*://*.youtube.com/*" }, function (tabs) {
+        const closedYouTubeTab = tabs.find(tab => tab.id === tabId);
+        if (removeInfo.isWindowClosing && closedYouTubeTab) {
+            console.log("YouTube tab closed");
+
+            // Clear storage
+            chrome.storage.local.clear(function () {
+                var error = chrome.runtime.lastError;
+                if (error) {
+                    console.error(error);
+                }
+                console.log("Timer reset in back-end");
+            });
+
+            // Stop the stopwatch (if necessary)
+            stopStopwatch();
+
+            // Send a message to a content script or background script to update the display
+            chrome.runtime.sendMessage("reset-timer", (response) => {
+                console.log("timer reset in popup", response);
+            });
+        }
+    });
 });
+
