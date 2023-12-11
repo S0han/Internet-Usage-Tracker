@@ -11,7 +11,7 @@
         "default_popup": "index.html"
     },
     "background": {
-        "service-worker": "service-worker.js"
+        "service_worker": "service-worker.js"
     },
     "permissions": [
         "activeTab",
