@@ -16,7 +16,8 @@
     "permissions": [
         "activeTab",
         "tabs",
-        "webNavigation"
+        "webNavigation",
+        "storage"
     ],
     "host_permissions": [
         "http://*/*",

@@ -23,12 +23,8 @@ function updateStopwatch() {
 
     let displayTime = pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
 
-    // Send a message to the content script with the updated timer value
-    chrome.tabs.query({ url: "*://*.youtube.com/*" }, function(tabs) {
-        tabs.forEach(tab => {
-            chrome.tabs.sendMessage(tab.id, { action: "updateTimer", timerValue: displayTime });
-        });
-    });
+    // Store timer value in chrome.storage
+    chrome.storage.local.set({ timerValue: displayTime });
 }
 
 function pad(number) {

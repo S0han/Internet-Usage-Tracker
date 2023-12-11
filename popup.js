@@ -1,6 +1,5 @@
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-    if (message.action === "updateTimer") {
-        // Update the timer displayed in the extension's popup window
-        document.getElementById("stopwatch").innerHTML = message.timerValue;
-    }
+// Retrieve timer value from chrome.storage
+chrome.storage.local.get("timerValue", function(data) {
+    let timerValue = data.timerValue || "00:00:00"; // Default value if not set
+    document.getElementById("stopwatch").innerHTML = timerValue;
 });
