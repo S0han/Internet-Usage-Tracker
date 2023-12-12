@@ -42,8 +42,9 @@ chrome.webNavigation.onDOMContentLoaded.addListener(function (details) {
 // Listen for tab closure or navigation
 chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
     chrome.tabs.query({ url: "*://*.youtube.com/*" }, function (tabs) {
-        const closedYouTubeTab = tabs.find(tab => tab.id === tabId);
-        if (removeInfo.isWindowClosing && closedYouTubeTab) {
+        const closedYouTubeTab = tabs.find(tab => removeInfo.isWindowClosing && tab.url.includes("youtube.com"));
+
+        if (closedYouTubeTab) {
             console.log("YouTube tab closed");
 
             // Clear storage
@@ -65,4 +66,3 @@ chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
         }
     });
 });
-
