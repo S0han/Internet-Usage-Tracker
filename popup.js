@@ -6,7 +6,7 @@ chrome.storage.local.get("timerValue", function(data) {
 
 //Reset the timer value and get the service-worker to console log success
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message === 'reset-timer') {
+    if (message.action === 'reset-timer') {
         document.getElementById("stopwatch").innerHTML = "00:00:00";
         sendResponse("Popup action executed");
     }
