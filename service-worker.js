@@ -41,11 +41,10 @@ chrome.webNavigation.onDOMContentLoaded.addListener(function (details) {
 
 // Listen for tab closure or navigation
 chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
-    chrome.tabs.query({ url: "*://*.youtube.com/*" }, function (tabs) {
-        const closedYouTubeTab = tabs.find(tab => removeInfo.isWindowClosing && tab.url.includes("youtube.com"));
-
-        if (closedYouTubeTab) {
-            console.log("YouTube tab closed");
+    chrome.tabs.query({ active: true }, function (tabs) {
+        const activeTab = tabs.find(tab => tab.id === tabId);
+        if (!activeTab) {
+            console.log("Tab is not active, performing actions...");
 
             // Clear storage
             chrome.storage.local.clear(function () {
@@ -61,8 +60,9 @@ chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
 
             // Send a message to a content script or background script to update the display
             chrome.runtime.sendMessage("reset-timer", (response) => {
-                console.log("timer reset in popup", response);
+                console.log("Popup action executed", response);
             });
         }
     });
 });
+
