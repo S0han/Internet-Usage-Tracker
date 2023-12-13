@@ -60,8 +60,17 @@ chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
 
             // Send a message to a content script or background script to update the display
             chrome.runtime.sendMessage("reset-timer", (response) => {
-                console.log("Popup action executed", response);
-            });
+                if (chrome.runtime.lastError) {
+                    // Check if the error is due to a disconnected port (closed tab)
+                    if (chrome.runtime.lastError.message.includes('Could not establish connection')) {
+                        console.warn('Tab is closed. Unable to send message.');
+                    } else {
+                        console.error(chrome.runtime.lastError.message);
+                    }
+                } else {
+                    console.log("Popup action executed", response);
+                }
+            });                     
         }
     });
 });
