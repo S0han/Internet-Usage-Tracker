@@ -39,13 +39,24 @@ chrome.webNavigation.onDOMContentLoaded.addListener(function (details) {
     }
 });
 
+function getTimerValueFromStorage() {
+    return new Promise((resolve) => {
+        chrome.storage.local.get("timerValue", (data) => {
+            resolve(data.timerValue || null);
+        });
+    });
+}
+
 // Listen for tab closure or navigation
-chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
+chrome.tabs.onRemoved.addListener(async function (tabId, removeInfo) {
+    const exitTime = await getTimerValueFromStorage();
     chrome.tabs.query({ active: true }, function (tabs) {
         const activeTab = tabs.find(tab => tab.id === tabId);
         if (!activeTab) {
             console.log("Tab is not active, performing actions...");
-
+            
+            console.log(exitTime || "Timer value not found in storage");
+            
             // Clear storage
             chrome.storage.local.clear(function () {
                 var error = chrome.runtime.lastError;
