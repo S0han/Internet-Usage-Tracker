@@ -25,6 +25,12 @@ function updateStopwatch() {
 
     // Store timer value in chrome.storage
     chrome.storage.local.set({ timerValue: displayTime });
+    
+    //TEST CODE ONLY
+    //Show what is stored in the local storage data
+    // chrome.storage.local.get("timerValue", function(data) {
+    //     console.log("Timer Value:", data.timerValue);
+    // });
 }
 
 function pad(number) {
