@@ -64,12 +64,17 @@ chrome.tabs.onRemoved.addListener(async function (tabId, removeInfo) {
             console.log(exitTime || "Timer value not found in storage");
             
             // Clear storage
-            chrome.storage.local.clear(function () {
+            chrome.storage.local.set({timerValue: 0}, function () {
                 var error = chrome.runtime.lastError;
                 if (error) {
                     console.error(error);
                 }
                 console.log("Timer reset in back-end");
+                
+                //ensure the timerValue is reset
+                chrome.storage.local.get("timerValue", function(data) {
+                    console.log("Timer Value:", data.timerValue);
+                });
             });
 
             // Stop the stopwatch (if necessary)
