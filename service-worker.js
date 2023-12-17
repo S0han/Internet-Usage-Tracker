@@ -107,7 +107,10 @@ chrome.tabs.onRemoved.addListener(async function (tabId, removeInfo) {
             //Handle the daily accumulated time
             chrome.storage.local.get(currentDate, (data) => {
                 let accumulatedTime = data[currentDate];
-                accumulatedTime = addFormattedTime(accumulatedTime, exitTime);
+                // Check if exitTime is not null before using it
+                if (exitTime !== null) {
+                    accumulatedTime = addFormattedTime(accumulatedTime, exitTime);
+                }
                 
                 //Set the accumulated time for today
                 const dailyLog = {};
