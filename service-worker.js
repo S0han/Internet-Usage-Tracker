@@ -138,7 +138,8 @@ chrome.tabs.onRemoved.addListener(async function (tabId, removeInfo) {
                 }
                 console.log("Timer reset in back-end");
                 
-                //ensure the timerValue is reset
+                //TEST CODE ONLY
+                //Ensure the timerValue is reset
                 // chrome.storage.local.get("timerValue", function(data) {
                 //     console.log("Timer Value:", data.timerValue);
                 // });
@@ -164,3 +165,10 @@ chrome.tabs.onRemoved.addListener(async function (tabId, removeInfo) {
     });
 });
 
+//redirect to backpage.html once message is recieved from content.js upon button click event
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+    if (message && message.redirect) {
+        // Redirect to backpage.html
+        chrome.tabs.update({ url: chrome.runtime.getURL('backpage.html') });
+    }
+});

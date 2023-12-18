@@ -1,3 +1,6 @@
+//button element on popup
+const button = document.getElementById("backPageRedirect");
+
 // Retrieve timer value from chrome.storage
 chrome.storage.local.get("timerValue", function(data) {
     let timerValue = data.timerValue || "00:00:00"; // Default value if not set
@@ -10,4 +13,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         document.getElementById("stopwatch").innerHTML = "00:00:00";
         sendResponse("Popup action executed");
     }
+});
+
+//Listen for button click on popup and redirect to the backpage.html to view chart.js data
+document.getElementById("backPageRedirect").addEventListener('click', () => {
+    chrome.runtime.sendMessage({ redirect: true });
 });
