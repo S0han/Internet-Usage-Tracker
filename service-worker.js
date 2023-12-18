@@ -92,7 +92,7 @@ function addFormattedTime(t1, t2) {
     return accumulatedTime;
 }
 
-// Listen for tab closure or navigation
+// Listen for tab closure
 chrome.tabs.onRemoved.addListener(async function (tabId, removeInfo) {
     try {
         const exitTime = await getTimerValueFromStorage();
@@ -185,5 +185,74 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     if (message && message.redirect) {
         // Open a new tab
         chrome.tabs.create({ url: chrome.runtime.getURL('backpage.html') });
+    }
+});
+
+chrome.tabs.onActivated.addListener(async function (activeInfo) {
+    try {
+        const currentTabId = activeInfo.tabId;
+        const currentTab = await new Promise(resolve => chrome.tabs.get(currentTabId, resolve));
+
+        if (!currentTab.url.includes("youtube.com")) {
+            console.log("Tab is not on youtube.com");
+
+            const exitTime = await getTimerValueFromStorage();
+            const currentDate = getFormattedDate();
+
+            if (typeof exitTime === 'string') {
+                chrome.storage.local.get(currentDate, (data) => {
+                    let accumulatedTime = data[currentDate];
+                    if (typeof accumulatedTime === 'string') {
+                        accumulatedTime = addFormattedTime(accumulatedTime, exitTime);
+                    } else {
+                        console.error('Invalid accumulated time:', accumulatedTime);
+                        accumulatedTime = exitTime;
+                    }
+
+                    const dailyLog = {};
+                    dailyLog[currentDate] = accumulatedTime;
+                    chrome.storage.local.set(dailyLog, () => {
+                        var error = chrome.runtime.lastError;
+                        if (error) {
+                            console.error(error);
+                        }
+                        console.log("Daily time updated in storage");
+
+                        chrome.storage.local.get(currentDate, function (dailyLog) {
+                            const updatedTime = dailyLog[currentDate];
+                            console.log(`Accumulated time for ${currentDate}: ${updatedTime}`);
+                        });
+                    });
+                });
+
+                chrome.storage.local.set({ timerValue: 0 }, function () {
+                    var error = chrome.runtime.lastError;
+                    if (error) {
+                        console.error(error);
+                    }
+                    console.log("Timer reset in back-end");
+
+                    stopStopwatch();
+
+                    chrome.runtime.sendMessage("reset-timer", (response) => {
+                        if (chrome.runtime.lastError) {
+                            if (chrome.runtime.lastError.message.includes('Could not establish connection')) {
+                                console.warn('Tab is closed. Unable to send message.');
+                            } else {
+                                console.error(chrome.runtime.lastError.message);
+                            }
+                        } else {
+                            console.log("Popup action executed", response);
+                        }
+                    });
+                });
+            } else {
+                console.error('Invalid exit time:', exitTime);
+                // Handle the case where exitTime is null or invalid
+            }
+        }
+    } catch (error) {
+        console.error('Error occurred:', error);
+        // Handle other potential errors that might occur in the try block
     }
 });
