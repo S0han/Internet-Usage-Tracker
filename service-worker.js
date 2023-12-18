@@ -94,91 +94,96 @@ function addFormattedTime(t1, t2) {
 
 // Listen for tab closure or navigation
 chrome.tabs.onRemoved.addListener(async function (tabId, removeInfo) {
-    const exitTime = await getTimerValueFromStorage();
-    const currentDate = getFormattedDate();
+    try {
+        const exitTime = await getTimerValueFromStorage();
+        const currentDate = getFormattedDate();
 
-    // Check if exitTime is a valid string
-    if (typeof exitTime === 'string') {
-        chrome.tabs.query({ active: true }, function (tabs) {
-            const activeTab = tabs.find(tab => tab.id === tabId);
-            if (!activeTab) {
-                console.log("Tab is not active, performing actions...");
-                
-                console.log(exitTime || "Timer value not found in storage");
-                
-                //Handle the daily accumulated time
-                chrome.storage.local.get(currentDate, (data) => {
-                    let accumulatedTime = data[currentDate];
-                    // Check if accumulatedTime is a valid string before using addFormattedTime
-                    if (typeof accumulatedTime === 'string') {
-                        accumulatedTime = addFormattedTime(accumulatedTime, exitTime);
-                    } else {
-                        // Handle the case where accumulatedTime is null or invalid
-                        console.error('Invalid accumulated time:', accumulatedTime);
-                        accumulatedTime = exitTime; // Set accumulatedTime to exitTime directly or handle as needed
-                    }
+        // Check if exitTime is a valid string
+        if (typeof exitTime === 'string') {
+            chrome.tabs.query({ active: true }, function (tabs) {
+                const activeTab = tabs.find(tab => tab.id === tabId);
+                if (!activeTab) {
+                    console.log("Tab is not active, performing actions...");
                     
-                    //Set the accumulated time for today
-                    const dailyLog = {};
-                    dailyLog[currentDate] = accumulatedTime;
-                    chrome.storage.local.set(dailyLog, () => {
+                    console.log(exitTime || "Timer value not found in storage");
+                    
+                    //Handle the daily accumulated time
+                    chrome.storage.local.get(currentDate, (data) => {
+                        let accumulatedTime = data[currentDate];
+                        // Check if accumulatedTime is a valid string before using addFormattedTime
+                        if (typeof accumulatedTime === 'string') {
+                            accumulatedTime = addFormattedTime(accumulatedTime, exitTime);
+                        } else {
+                            // Handle the case where accumulatedTime is null or invalid
+                            console.error('Invalid accumulated time:', accumulatedTime);
+                            accumulatedTime = exitTime; // Set accumulatedTime to exitTime directly or handle as needed
+                        }
+                        
+                        //Set the accumulated time for today
+                        const dailyLog = {};
+                        dailyLog[currentDate] = accumulatedTime;
+                        chrome.storage.local.set(dailyLog, () => {
+                            var error = chrome.runtime.lastError;
+                            if (error) {
+                                console.error(error);
+                            }
+                            console.log("Daily time updated in storage");
+
+                            // Fetch and log the updated accumulated time
+                            chrome.storage.local.get(currentDate, function (dailyLog) {
+                                const updatedTime = dailyLog[currentDate];
+                                console.log(`Accumulated time for ${currentDate}: ${updatedTime}`);
+                            });
+                        });
+                    });
+                    
+                    //reset timer value in storage
+                    chrome.storage.local.set({timerValue: 0}, function () {
                         var error = chrome.runtime.lastError;
                         if (error) {
                             console.error(error);
                         }
-                        console.log("Daily time updated in storage");
-
-                        // Fetch and log the updated accumulated time
-                        chrome.storage.local.get(currentDate, function (dailyLog) {
-                            const updatedTime = dailyLog[currentDate];
-                            console.log(`Accumulated time for ${currentDate}: ${updatedTime}`);
-                        });
+                        console.log("Timer reset in back-end");
+                        
+                        //TEST CODE ONLY
+                        //Ensure the timerValue is reset
+                        // chrome.storage.local.get("timerValue", function(data) {
+                        //     console.log("Timer Value:", data.timerValue);
+                        // });
                     });
-                });
-                
-                //reset timer value in storage
-                chrome.storage.local.set({timerValue: 0}, function () {
-                    var error = chrome.runtime.lastError;
-                    if (error) {
-                        console.error(error);
-                    }
-                    console.log("Timer reset in back-end");
-                    
-                    //TEST CODE ONLY
-                    //Ensure the timerValue is reset
-                    // chrome.storage.local.get("timerValue", function(data) {
-                    //     console.log("Timer Value:", data.timerValue);
-                    // });
-                });
 
-                // Stop the stopwatch (if necessary)
-                stopStopwatch();
+                    // Stop the stopwatch (if necessary)
+                    stopStopwatch();
 
-                // Send a message to a content script or background script to update the display
-                chrome.runtime.sendMessage("reset-timer", (response) => {
-                    if (chrome.runtime.lastError) {
-                        // Check if the error is due to a disconnected port (closed tab)
-                        if (chrome.runtime.lastError.message.includes('Could not establish connection')) {
-                            console.warn('Tab is closed. Unable to send message.');
+                    // Send a message to a content script or background script to update the display
+                    chrome.runtime.sendMessage("reset-timer", (response) => {
+                        if (chrome.runtime.lastError) {
+                            // Check if the error is due to a disconnected port (closed tab)
+                            if (chrome.runtime.lastError.message.includes('Could not establish connection')) {
+                                console.warn('Tab is closed. Unable to send message.');
+                            } else {
+                                console.error(chrome.runtime.lastError.message);
+                            }
                         } else {
-                            console.error(chrome.runtime.lastError.message);
+                            console.log("Popup action executed", response);
                         }
-                    } else {
-                        console.log("Popup action executed", response);
-                    }
-                });                     
-            }
-        });
-    } else {
-        console.error('Invalid exit time:', exitTime);
-        // Handle the case where exitTime is null or invalid
+                    });                     
+                }
+            });
+        } else {
+            console.error('Invalid exit time:', exitTime);
+            // Handle the case where exitTime is null or invalid
+        }
+    } catch (error) {
+        console.error('Error occurred:', error);
+        // Handle other potential errors that might occur in the try block
     }
 });
 
 //redirect to backpage.html once message is recieved from content.js upon button click event
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     if (message && message.redirect) {
-        // Redirect to backpage.html
-        chrome.tabs.update({ url: chrome.runtime.getURL('backpage.html') });
+        // Open a new tab
+        chrome.tabs.create({ url: chrome.runtime.getURL('backpage.html') });
     }
 });
