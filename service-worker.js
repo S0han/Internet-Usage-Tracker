@@ -193,13 +193,17 @@ chrome.tabs.onActivated.addListener(async function (activeInfo) {
         const currentTabId = activeInfo.tabId;
         const currentTab = await new Promise(resolve => chrome.tabs.get(currentTabId, resolve));
 
-        if (!currentTab.url.includes("youtube.com")) {
-            console.log("Tab is not on youtube.com");
+        if (currentTab.url.includes("youtube.com")) {
+            console.log("Tab is on youtube.com");
+
+            // Restart the timer if it's not running
+            startStopwatch();
 
             const exitTime = await getTimerValueFromStorage();
             const currentDate = getFormattedDate();
 
-            if (typeof exitTime === 'string') {
+            if (exitTime !== null && typeof exitTime === 'string') {
+                // Handle the accumulated time update logic
                 chrome.storage.local.get(currentDate, (data) => {
                     let accumulatedTime = data[currentDate];
                     if (typeof accumulatedTime === 'string') {
@@ -224,32 +228,15 @@ chrome.tabs.onActivated.addListener(async function (activeInfo) {
                         });
                     });
                 });
-
-                chrome.storage.local.set({ timerValue: 0 }, function () {
-                    var error = chrome.runtime.lastError;
-                    if (error) {
-                        console.error(error);
-                    }
-                    console.log("Timer reset in back-end");
-
-                    stopStopwatch();
-
-                    chrome.runtime.sendMessage("reset-timer", (response) => {
-                        if (chrome.runtime.lastError) {
-                            if (chrome.runtime.lastError.message.includes('Could not establish connection')) {
-                                console.warn('Tab is closed. Unable to send message.');
-                            } else {
-                                console.error(chrome.runtime.lastError.message);
-                            }
-                        } else {
-                            console.log("Popup action executed", response);
-                        }
-                    });
-                });
+            } else if (exitTime === null) {
+                console.log('No exit time stored yet.');
             } else {
                 console.error('Invalid exit time:', exitTime);
-                // Handle the case where exitTime is null or invalid
+                // Handle the case where exitTime is not a string
             }
+        } else {
+            console.log("Tab is not on youtube.com");
+            stopStopwatch(); // Stop the timer when leaving the YouTube tab
         }
     } catch (error) {
         console.error('Error occurred:', error);
