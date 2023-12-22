@@ -1,46 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Internet Usage Tracker - BackPage</title>
-    <meta charset="utf-8">
-    <script src="js/chart.min.js"></script> <!-- Update the path accordingly -->
-</head>
-<style type="text/css">
-    body {
-        margin: 5px;
-    }
-    h1 {
-        font-size: 15px;
-        text-align: center;
-    }
-</style>
-<body>
-    <h1>Back Page</h1>
-    <div>
-        <canvas id="myChart"></canvas>
-    </div>
-      
-    <script>
-        const ctx = document.getElementById('myChart');
-      
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                datasets: [{
-                    label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    </script>  
-</body>
+  <head>
+      <title>Internet Usage Tracker - BackPage</title>
+      <meta charset="utf-8">
+      <script src="chart.js"></script>
+  </head>
+  <style type="text/css">
+      body {
+          margin: 5px;
+      }
+      h1 {
+          font-size: 15px;
+          text-align: center;
+      }
+  </style>
+  <body>
+      <h1>Back Page</h1>
+      <div>
+          <canvas id="myChart"></canvas>
+      </div>
+      <script src="chart-script.js"></script>
+  </body>
 </html>
