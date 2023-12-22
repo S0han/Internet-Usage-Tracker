@@ -1,48 +1,46 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Internet Usage Tracker - BackPage</title>
-        <meta charset="utf-8">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    </head>
-    <style type="text/css">
-        body {
-            margin: 5px
-        }
-        h1 {
-            font-size: 15px;
-            text-align: center;
-        }
-    </style>
-    <body>
-            <h1>Back Page</h1>
-            <div>
-                <canvas id="myChart"></canvas>
-            </div>
-              
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-              
-            <script>
-                const ctx = document.getElementById('myChart');
-              
-                new Chart(ctx, {
-                  type: 'bar',
-                  data: {
-                    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                    datasets: [{
-                      label: '# of Votes',
-                      data: [12, 19, 3, 5, 2, 3],
-                      borderWidth: 1
-                    }]
-                  },
-                  options: {
-                    scales: {
-                      y: {
+<head>
+    <title>Internet Usage Tracker - BackPage</title>
+    <meta charset="utf-8">
+    <script src="js/chart.min.js"></script> <!-- Update the path accordingly -->
+</head>
+<style type="text/css">
+    body {
+        margin: 5px;
+    }
+    h1 {
+        font-size: 15px;
+        text-align: center;
+    }
+</style>
+<body>
+    <h1>Back Page</h1>
+    <div>
+        <canvas id="myChart"></canvas>
+    </div>
+      
+    <script>
+        const ctx = document.getElementById('myChart');
+      
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                datasets: [{
+                    label: '# of Votes',
+                    data: [12, 19, 3, 5, 2, 3],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
                         beginAtZero: true
-                      }
                     }
-                  }
-                });
-            </script>  
-    </body>
+                }
+            }
+        });
+    </script>  
+</body>
 </html>

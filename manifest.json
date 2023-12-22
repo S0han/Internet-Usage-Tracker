@@ -1,11 +1,10 @@
 {
     "manifest_version": 3,
-    
     "name": "Internet Usage Tracker",
     "version": "1.0.1",
     "description": "Extension that tracks time spent on Chrome Browser",
     "author": "Kane Pereira",
-    "action":{
+    "action": {
         "default_icon": "icon.jpg",
         "default_title": "Internet Usage Tracker",
         "default_popup": "index.html"
@@ -22,5 +21,8 @@
     "host_permissions": [
         "http://*/*",
         "https://*/*"
-    ]
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    }
 }
