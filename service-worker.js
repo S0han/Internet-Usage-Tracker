@@ -140,6 +140,13 @@ function sendMessageToBackground() {
   });
 }
 
+//create to backpage upon button press
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.redirect) {
+        chrome.tabs.create({ url: 'backPage.html' });
+    }
+});
+
 // Consolidated logic for tab removal and tab activation
 chrome.tabs.onRemoved.addListener(async function (tabId, removeInfo) {
   try {
